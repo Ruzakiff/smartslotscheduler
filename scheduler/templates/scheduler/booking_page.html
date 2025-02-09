@@ -1,0 +1,27 @@
+{% extends "core/shared/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">{{ business.name }}</h1>
+    
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <form id="booking-form" method="POST" action="{% url 'scheduler:create_booking' %}">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Select Service</label>
+                <select name="service" id="service" class="w-full p-2 border rounded" required>
+                    <option value="">Choose a service...</option>
+                    {% for service in services %}
+                    <option value="{{ service.id }}">
+                        {{ service.name }} - ${{ service.price }} ({{ service.duration }} mins)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Add other form fields -->
+        </form>
+    </div>
+</div>
+{% endblock %}

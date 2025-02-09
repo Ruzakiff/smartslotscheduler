@@ -1,0 +1,113 @@
+### **🚀 Product Description for Django MVP Apps**  
+
+This Django-based **dynamic scheduling system** is designed to help **mobile service businesses** automate **appointment booking, payments, and customer management** while **minimizing no-shows and maximizing revenue.**  
+
+Each app in the system serves a **specific function**, ensuring the platform remains scalable and adaptable for different business needs.  
+
+---
+
+## **🔹 Core Django Apps in the MVP**
+### **1️⃣ `core` (User & Business Management)**
+📌 **Purpose:** Handles user authentication, business account setup, and permissions.  
+📌 **Key Features:**  
+- Business owners create an account and set up their **booking page**.  
+- Technicians or solo operators manage their availability.  
+- Secure login system with **Django authentication**.  
+
+📌 **Endpoints:**  
+✅ `/signup/` → Business registration & onboarding.  
+✅ `/login/` → Business owners log in to manage appointments.  
+✅ `/dashboard/` → Admin dashboard to view business analytics & bookings.  
+
+---
+
+### **2️⃣ `scheduling` (Dynamic Scheduling & Booking System)**
+📌 **Purpose:** Manages customer bookings, dynamically adjusts time slots, and prevents overbooking.  
+📌 **Key Features:**  
+- **Dynamic time slots** based on real-time **travel time calculations**.  
+- Businesses can **manually add bookings** for customers who book via text/call.  
+- Prevents **double bookings** by syncing with Google Calendar.  
+
+📌 **Endpoints:**  
+✅ `/businessname/booking/` → Public booking page for customers.  
+✅ `/availability/<business_id>/` → Returns **available time slots dynamically**.  
+✅ `/appointments/<appointment_id>/cancel/` → Allows customers to cancel (if deposit is paid).  
+
+📌 **Tech Used:**  
+🛠️ **Google Maps API** → Calculates travel time between appointments.  
+🛠️ **Django ORM** → Stores appointments & availability.  
+
+---
+
+### **3️⃣ `payments` (Stripe Integration & No-Show Protection)**
+📌 **Purpose:** Handles all **Stripe payments**, including **pay-per-booking, deposits, and refunds**.  
+📌 **Key Features:**  
+- **Customers must pay a deposit/full payment** before confirming the appointment.  
+- **Stripe Connect integration** allows businesses to get paid instantly.  
+- Supports **pay-per-booking ($2 per job) or flat monthly subscription ($29/month)**.  
+
+📌 **Endpoints:**  
+✅ `/checkout/<appointment_id>/` → Redirects customers to Stripe payment page.  
+✅ `/payouts/` → Sends earnings to businesses after deducting commission.  
+✅ `/subscription/<business_id>/` → Allows business owners to manage their subscription.  
+
+📌 **Tech Used:**  
+🛠️ **Stripe API** → Processes payments securely.  
+🛠️ **Webhook Integration** → Syncs Stripe transactions with appointment statuses.  
+
+---
+
+### **4️⃣ `notifications` (Customer Reminders & No-Show Prevention)**
+📌 **Purpose:** Automates **customer reminders** to **reduce no-shows** and **increase repeat bookings**.  
+📌 **Key Features:**  
+- **Appointment confirmations & reminders via SMS/Email** (e.g., "Your appointment is tomorrow at 10 AM").  
+- **Automatic rebooking reminders** for past customers (e.g., "It's been 3 months! Time for another service?").  
+- Businesses can **send manual follow-up texts** to high-value clients.  
+
+📌 **Endpoints:**  
+✅ `/send-reminder/<appointment_id>/` → Triggers an SMS/email reminder.  
+✅ `/repeat-customers/` → Auto-generates rebooking reminders for past clients.  
+✅ `/businessname/customers/` → Businesses can view & manage customer history.  
+
+📌 **Tech Used:**  
+🛠️ **Twilio API** → Sends SMS reminders.  
+🛠️ **SendGrid API** → Sends email confirmations.  
+🛠️ **Celery + Cron Jobs** → Automates reminder scheduling.  
+
+---
+
+### **5️⃣ `business_portal` (Admin Dashboard for Business Owners)**
+📌 **Purpose:** Allows **businesses to manage appointments, payments, and customer data** in one place.  
+📌 **Key Features:**  
+- **Dashboard showing today’s appointments & upcoming bookings.**  
+- **Manually add appointments** for text-based customers.  
+- View **payment history & Stripe earnings reports**.  
+
+📌 **Endpoints:**  
+✅ `/dashboard/` → Business owner’s overview of bookings & revenue.  
+✅ `/add-appointment/` → Allows manual appointment entry.  
+✅ `/settings/` → Lets businesses customize their booking page & payment settings.  
+
+📌 **Tech Used:**  
+🛠️ **Django Admin Panel** → Basic backend management.  
+🛠️ **React/Vue (Optional)** → If a more modern UI is needed.  
+
+---
+
+## **🚀 Final MVP Deliverables**
+| **Feature** | **How It Works** |
+|-------------|-----------------|
+| **📌 Per-Business Booking Page** | Each business gets a **unique URL** to take customer bookings. |
+| **💳 Stripe Payments (Per-Booking & Subscriptions)** | Customers **pre-pay** before confirming an appointment. |
+| **🗂️ Business Dashboard** | Owners can **view & manage all bookings + manually add text customers**. |
+| **🔔 Automated SMS & Email Reminders** | No-shows are reduced with **appointment & rebooking reminders**. |
+| **📱 Manual Entry for Text-Based Customers** | Businesses can **manually add bookings** while still using the system. |
+
+---
+
+## **🎯 Next Steps**
+1️⃣ **Would you like help setting up multi-business booking pages (so each business gets a unique URL)?**  
+2️⃣ **Do you want a UI/landing page template to test this with businesses?**  
+3️⃣ **Would you like help integrating Stripe Connect for automatic commission deduction?**  
+
+🚀 **Once this MVP is launched, you can start getting real business signups!** Let’s build it right.

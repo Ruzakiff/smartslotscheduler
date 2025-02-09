@@ -1,0 +1,26 @@
+{% extends "core/shared/base.html" %}
+
+{% block title %}Welcome to SmartSlotScheduler{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="text-4xl font-bold mb-8">Book Services with Ease</h1>
+    
+    {% if businesses %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {% for business in businesses %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold mb-2">{{ business.name }}</h2>
+                    <p class="text-gray-600 mb-4">{{ business.services.count }} services available</p>
+                    <a href="{% url 'scheduler:booking_page' business.booking_url %}" 
+                       class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Book Now
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-600">No businesses available yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
