@@ -1,0 +1,4 @@
+*.zip
+.sqlite3
+*.txt
+venv/
