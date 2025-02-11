@@ -1,0 +1,72 @@
+{% extends "core/shared/base.html" %}
+
+{% block title %}{% if service %}Edit{% else %}Add{% endif %} Service - {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <h1 class="text-2xl font-bold mb-6">
+        {% if service %}Edit{% else %}Add{% endif %} Service
+    </h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Service Name</label>
+                <input type="text" name="name" 
+                       class="w-full p-2 border rounded" 
+                       value="{{ service.name|default:'' }}"
+                       required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Duration (minutes)</label>
+                <input type="number" name="duration" 
+                       class="w-full p-2 border rounded" 
+                       min="15" step="15" 
+                       value="{{ service.duration|default:'60' }}"
+                       required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Price</label>
+                <input type="number" name="price" 
+                       class="w-full p-2 border rounded" 
+                       min="0" step="0.01" 
+                       value="{{ service.price|default:'0' }}"
+                       required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Description</label>
+                <textarea name="description" 
+                          class="w-full p-2 border rounded" 
+                          rows="3">{{ service.description|default:'' }}</textarea>
+            </div>
+
+            {% if service %}
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="active" 
+                           class="mr-2"
+                           {% if service.active %}checked{% endif %}>
+                    <span class="text-gray-700 font-bold">Active</span>
+                </label>
+            </div>
+            {% endif %}
+            
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'core:dashboard' %}" 
+                   class="px-4 py-2 border rounded hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    {% if service %}Save Changes{% else %}Add Service{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

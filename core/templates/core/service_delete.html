@@ -1,0 +1,30 @@
+{% extends "core/shared/base.html" %}
+
+{% block title %}Delete Service - {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-4">Delete Service</h2>
+        
+        <p class="mb-6 text-gray-600">
+            Are you sure you want to delete the service "{{ service.name }}"? 
+            This action cannot be undone.
+        </p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'core:dashboard' %}" 
+                   class="px-4 py-2 border rounded hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                    Delete Service
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,67 @@
+{% extends "core/shared/base.html" %}
+{% load core_extras %}
+
+{% block title %}Business Hours - {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Set Business Hours</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% for day_num, day_name in days %}
+                {% with day_hours=hours|get_item:day_num %}
+                <div class="mb-6 pb-4 border-b last:border-0">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold">{{ day_name }}</h3>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="closed_{{ day_num }}" 
+                                   class="mr-2"
+                                   {% if day_hours.is_closed %}checked{% endif %}
+                                   onchange="toggleHours(this, {{ day_num }})">
+                            <span class="text-gray-600">Closed</span>
+                        </label>
+                    </div>
+                    
+                    <div id="hours_{{ day_num }}" class="grid grid-cols-2 gap-4"
+                         {% if day_hours.is_closed %}style="display: none;"{% endif %}>
+                        <div>
+                            <label class="block text-gray-600 mb-1">Open</label>
+                            <input type="time" name="start_{{ day_num }}"
+                                   class="w-full p-2 border rounded"
+                                   value="{{ day_hours.start_time|time:'H:i' }}">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-1">Close</label>
+                            <input type="time" name="end_{{ day_num }}"
+                                   class="w-full p-2 border rounded"
+                                   value="{{ day_hours.end_time|time:'H:i' }}">
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{% url 'core:dashboard' %}" 
+                   class="px-4 py-2 border rounded hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Save Hours
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleHours(checkbox, dayNum) {
+    const hoursDiv = document.getElementById(`hours_${dayNum}`);
+    hoursDiv.style.display = checkbox.checked ? 'none' : 'grid';
+}
+</script>
+{% endblock %} 

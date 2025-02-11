@@ -1,27 +1,251 @@
 {% extends "core/shared/base.html" %}
 
+{% block title %}Book with {{ business.name }}{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">{{ business.name }}</h1>
-    
-    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <form id="booking-form" method="POST" action="{% url 'scheduler:create_booking' %}">
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <!-- Business Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold mb-2">{{ business.name }}</h1>
+        <p class="text-gray-600">Book your appointment online</p>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form id="booking-form" class="space-y-6">
             {% csrf_token %}
             
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Select Service</label>
-                <select name="service" id="service" class="w-full p-2 border rounded" required>
-                    <option value="">Choose a service...</option>
+            <!-- Step 1: Select Service -->
+            <div id="step-1" class="booking-step">
+                <h2 class="text-xl font-semibold mb-4">1. Select a Service</h2>
+                <div class="space-y-3">
                     {% for service in services %}
-                    <option value="{{ service.id }}">
-                        {{ service.name }} - ${{ service.price }} ({{ service.duration }} mins)
-                    </option>
+                        <label class="flex items-start p-4 border rounded cursor-pointer hover:bg-gray-50">
+                            <input type="radio" 
+                                   name="service" 
+                                   value="{{ service.id }}"
+                                   class="mt-1"
+                                   required>
+                            <div class="ml-3">
+                                <div class="font-semibold">{{ service.name }}</div>
+                                <div class="text-gray-600">${{ service.price }} • {{ service.duration }} mins</div>
+                                {% if service.description %}
+                                    <div class="text-sm text-gray-500 mt-1">{{ service.description }}</div>
+                                {% endif %}
+                            </div>
+                        </label>
                     {% endfor %}
-                </select>
+                </div>
             </div>
-            
-            <!-- Add other form fields -->
+
+            <!-- Step 2: Select Date -->
+            <div id="step-2" class="booking-step hidden">
+                <h2 class="text-xl font-semibold mb-4">2. Select a Date</h2>
+                <div class="mb-4">
+                    <input type="date" 
+                           id="date-picker"
+                           class="w-full p-2 border rounded"
+                           min="{{ today|date:'Y-m-d' }}"
+                           value="{{ today|date:'Y-m-d' }}">
+                </div>
+            </div>
+
+            <!-- Step 3: Select Time -->
+            <div id="step-3" class="booking-step hidden">
+                <h2 class="text-xl font-semibold mb-4">3. Select a Time</h2>
+                <div id="time-slots" class="grid grid-cols-3 gap-2">
+                    <!-- Time slots will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Step 4: Your Details -->
+            <div id="step-4" class="booking-step hidden">
+                <h2 class="text-xl font-semibold mb-4">4. Your Details</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Name</label>
+                        <input type="text" name="customer_name" required
+                               class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Email</label>
+                        <input type="email" name="customer_email" required
+                               class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Phone</label>
+                        <input type="tel" name="customer_phone" required
+                               class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Notes</label>
+                        <textarea name="notes" rows="3"
+                                  class="w-full p-2 border rounded"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between pt-4">
+                <button type="button" 
+                        id="prev-step"
+                        class="px-4 py-2 border rounded hover:bg-gray-50 hidden">
+                    Back
+                </button>
+                <button type="button" 
+                        id="next-step"
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Next
+                </button>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    const form = document.getElementById('booking-form');
+    const nextBtn = document.getElementById('next-step');
+    const prevBtn = document.getElementById('prev-step');
+    
+    // Set minimum date to today
+    const datePicker = document.getElementById('date-picker');
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const formattedToday = `${yyyy}-${mm}-${dd}`;
+    
+    datePicker.min = formattedToday;
+    datePicker.value = formattedToday;
+
+    function showStep(step) {
+        document.querySelectorAll('.booking-step').forEach(el => {
+            el.classList.add('hidden');
+        });
+        document.getElementById(`step-${step}`).classList.remove('hidden');
+        prevBtn.classList.toggle('hidden', step === 1);
+        nextBtn.textContent = step === totalSteps ? 'Book Appointment' : 'Next';
+        
+        if (step === 3) {
+            // Load time slots when reaching the time step
+            loadTimeSlots(datePicker.value);
+        }
+    }
+
+    function loadTimeSlots(date) {
+        const serviceId = document.querySelector('input[name="service"]:checked')?.value;
+        if (!serviceId) {
+            alert('Please select a service first');
+            return;
+        }
+
+        const slotsContainer = document.getElementById('time-slots');
+        slotsContainer.innerHTML = '<p class="text-gray-500">Loading available times...</p>';
+
+        fetch(`/api/slots/{{ business.id }}/?date=${date}&service=${serviceId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    slotsContainer.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+                    return;
+                }
+                
+                if (data.slots.length === 0) {
+                    slotsContainer.innerHTML = '<p class="text-gray-500">No available slots for this day</p>';
+                    return;
+                }
+                
+                slotsContainer.innerHTML = data.slots.map(slot => `
+                    <button type="button" 
+                            class="p-2 border rounded hover:bg-blue-50"
+                            onclick="selectTimeSlot(this, '${slot}')">
+                        ${slot}
+                    </button>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                slotsContainer.innerHTML = '<p class="text-red-500">Failed to load time slots</p>';
+            });
+    }
+
+    nextBtn.addEventListener('click', function() {
+        if (currentStep === 2) {
+            // Validate date selection
+            const selectedDate = datePicker.value;
+            if (!selectedDate) {
+                alert('Please select a date');
+                return;
+            }
+        } else if (currentStep === 3) {
+            // Validate time selection
+            if (!form.dataset.selectedTime) {
+                alert('Please select a time');
+                return;
+            }
+        }
+        
+        if (currentStep < totalSteps) {
+            currentStep++;
+            showStep(currentStep);
+        } else {
+            submitBooking();
+        }
+    });
+
+    prevBtn.addEventListener('click', function() {
+        if (currentStep > 1) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+
+    // Update time slots when date changes
+    datePicker.addEventListener('change', function() {
+        form.dataset.selectedTime = null; // Clear selected time
+        if (currentStep === 3) {
+            loadTimeSlots(this.value);
+        }
+    });
+});
+
+function selectTimeSlot(button, time) {
+    // Remove selection from all buttons
+    document.querySelectorAll('#time-slots button').forEach(btn => {
+        btn.classList.remove('bg-blue-50', 'border-blue-500');
+    });
+    
+    // Add selection to clicked button
+    button.classList.add('bg-blue-50', 'border-blue-500');
+    
+    // Store selected time
+    document.getElementById('booking-form').dataset.selectedTime = time;
+}
+
+function submitBooking() {
+    const form = document.getElementById('booking-form');
+    const serviceId = form.querySelector('input[name="service"]:checked')?.value;
+    const date = document.getElementById('date-picker').value;
+    const time = form.dataset.selectedTime;
+    
+    if (!serviceId || !date || !time) {
+        alert('Please complete all required fields');
+        return;
+    }
+    
+    // TODO: Implement booking submission
+    console.log('Booking:', { 
+        serviceId, 
+        date, 
+        time,
+        name: form.querySelector('[name="customer_name"]').value,
+        email: form.querySelector('[name="customer_email"]').value,
+        phone: form.querySelector('[name="customer_phone"]').value
+    });
+    alert('Booking submission to be implemented');
+}
+</script>
 {% endblock %}

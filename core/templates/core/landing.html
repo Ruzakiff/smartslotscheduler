@@ -1,26 +1,67 @@
 {% extends "core/shared/base.html" %}
 
-{% block title %}Welcome to SmartSlotScheduler{% endblock %}
+{% block title %}SmartSlotScheduler - Easy Online Booking{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h1 class="text-4xl font-bold mb-8">Book Services with Ease</h1>
-    
+<div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+        <h1 class="text-4xl font-bold mb-4">
+            Simple Online Booking for Service Businesses
+        </h1>
+        <p class="text-xl text-gray-600 mb-8">
+            Let your customers book appointments online, 24/7
+        </p>
+        <a href="{% url 'core:signup' %}" 
+           class="bg-blue-500 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-600">
+            Start Free Trial
+        </a>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-2">Online Booking</h3>
+            <p class="text-gray-600">Let customers book appointments anytime, anywhere</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-2">Reduce No-Shows</h3>
+            <p class="text-gray-600">Automatic reminders and deposit payments</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-2">Save Time</h3>
+            <p class="text-gray-600">Automate your scheduling and focus on your work</p>
+        </div>
+    </div>
+
+    <!-- Business List -->
     {% if businesses %}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold mb-6">Featured Businesses</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for business in businesses %}
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-semibold mb-2">{{ business.name }}</h2>
-                    <p class="text-gray-600 mb-4">{{ business.services.count }} services available</p>
-                    <a href="{% url 'scheduler:booking_page' business.booking_url %}" 
-                       class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                        Book Now
-                    </a>
-                </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="font-semibold mb-2">{{ business.name }}</h3>
+                <a href="/{{ business.booking_url }}/" 
+                   class="text-blue-500 hover:text-blue-700">
+                    Book Now →
+                </a>
+            </div>
             {% endfor %}
         </div>
-    {% else %}
-        <p class="text-gray-600">No businesses available yet.</p>
+    </div>
     {% endif %}
+
+    <!-- CTA Section -->
+    <div class="text-center">
+        <h2 class="text-2xl font-bold mb-4">Ready to grow your business?</h2>
+        <p class="text-gray-600 mb-8">
+            Join thousands of businesses using SmartSlotScheduler
+        </p>
+        <a href="{% url 'core:signup' %}" 
+           class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+            Get Started
+        </a>
+    </div>
 </div>
 {% endblock %}
