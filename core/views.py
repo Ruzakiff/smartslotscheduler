@@ -9,6 +9,7 @@ from scheduler.models import Service, BusinessHours, Booking
 from datetime import time
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.http import JsonResponse
 
 def business_signup(request):
     """Business registration & onboarding"""
@@ -189,3 +190,35 @@ def logout_view(request):
     auth_logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect('core:landing')
+
+@login_required
+def update_calendar_id(request):
+    """Update business calendar ID"""
+    if request.method == 'POST':
+        try:
+            business = Business.objects.get(owner=request.user)
+            calendar_id = request.POST.get('calendar_id')
+            
+            business.calendar_id = calendar_id
+            business.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Calendar ID updated successfully'
+            })
+            
+        except Business.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Business not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+            
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    }, status=405)

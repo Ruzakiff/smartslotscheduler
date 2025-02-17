@@ -46,6 +46,32 @@
         {% endif %}
     </div>
     
+    <!-- Calendar Integration Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Google Calendar Integration</h2>
+        <div class="flex items-center space-x-4">
+            <div class="flex-1">
+                <input type="text" 
+                       value="{{ business.calendar_id|default:'' }}" 
+                       class="w-full p-2 bg-gray-50 border rounded" 
+                       id="calendar-id"
+                       placeholder="Enter your Google Calendar ID">
+            </div>
+            <button onclick="updateCalendarId()" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Save
+            </button>
+        </div>
+        <p class="mt-2 text-sm text-gray-600">
+            Enter your Google Calendar ID to sync appointments. 
+            <a href="https://support.google.com/calendar/answer/37083" 
+               target="_blank"
+               class="text-blue-500 hover:text-blue-700">
+                Learn how to find your Calendar ID
+            </a>
+        </p>
+    </div>
+    
     <!-- Services Section -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold mb-4">Your Services</h2>
@@ -119,6 +145,77 @@ function copyBookingUrl() {
     setTimeout(() => {
         button.textContent = originalText;
     }, 2000);
+}
+
+function updateCalendarId() {
+    const calendarId = document.getElementById('calendar-id').value;
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    // Show loading state
+    button.textContent = 'Saving...';
+    button.disabled = true;
+    
+    // Send update request
+    fetch('{% url "core:update_calendar_id" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: `calendar_id=${encodeURIComponent(calendarId)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Show success state
+            button.textContent = 'Saved!';
+            button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            button.classList.add('bg-green-500', 'hover:bg-green-600');
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-500', 'hover:bg-green-600');
+                button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                button.disabled = false;
+            }, 2000);
+        } else {
+            throw new Error(data.message);
+        }
+    })
+    .catch(error => {
+        // Show error state
+        button.textContent = 'Error!';
+        button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+        button.classList.add('bg-red-500', 'hover:bg-red-600');
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('bg-red-500', 'hover:bg-red-600');
+            button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            button.disabled = false;
+        }, 2000);
+        
+        console.error('Error updating calendar ID:', error);
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 </script>
 {% endblock %}
