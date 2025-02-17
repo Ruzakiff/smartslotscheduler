@@ -37,8 +37,8 @@ class BusinessHours(models.Model):
     
     business = models.ForeignKey(Business, related_name='hours', on_delete=models.CASCADE)
     day_of_week = models.IntegerField(choices=DAYS_OF_WEEK)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
     is_closed = models.BooleanField(default=False)
 
     class Meta:

@@ -11,4 +11,8 @@ urlpatterns = [
     
     # This should be last as it's a catch-all pattern
     path('<str:booking_url>/', views.booking_page, name='booking_page'),
+    path('api/hold-slot', views.hold_slot, name='hold_slot'),
+    path('api/available-slots', views.get_calendar_slots, name='get_calendar_slots'),
+    path('api/create-booking', views.create_calendar_booking, name='create_calendar_booking'),
+    path('api/release-hold', views.release_slot, name='release_slot'),
 ]

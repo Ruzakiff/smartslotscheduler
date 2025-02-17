@@ -47,18 +47,22 @@ def business_signup(request):
 @login_required
 def business_dashboard(request):
     """Business owner's dashboard"""
-    business = get_object_or_404(Business, owner=request.user)
-    services = Service.objects.filter(business=business)
-    upcoming_bookings = Booking.objects.filter(
-        business=business,
-        start_time__gte=timezone.now()
-    ).order_by('start_time')[:5]
-    
-    return render(request, 'core/dashboard.html', {
-        'business': business,
-        'services': services,
-        'upcoming_bookings': upcoming_bookings,
-    })
+    try:
+        business = Business.objects.get(owner=request.user)
+        services = Service.objects.filter(business=business)
+        upcoming_bookings = Booking.objects.filter(
+            business=business,
+            start_time__gte=timezone.now()
+        ).order_by('start_time')[:5]
+        
+        return render(request, 'core/dashboard.html', {
+            'business': business,
+            'services': services,
+            'upcoming_bookings': upcoming_bookings,
+        })
+    except Business.DoesNotExist:
+        messages.error(request, "Please create a business profile first")
+        return redirect('core:signup')
 
 def landing_page(request):
     """Homepage showing list of businesses and signup option"""
@@ -140,17 +144,17 @@ def business_hours(request):
         # Create new hours for each day
         for day in range(7):  # 0 = Monday, 6 = Sunday
             is_closed = request.POST.get(f'closed_{day}') == 'on'
-            if not is_closed:
-                start = request.POST.get(f'start_{day}')
-                end = request.POST.get(f'end_{day}')
-                if start and end:
-                    BusinessHours.objects.create(
-                        business=business,
-                        day_of_week=day,
-                        start_time=start,
-                        end_time=end,
-                        is_closed=is_closed
-                    )
+            start = request.POST.get(f'start_{day}')
+            end = request.POST.get(f'end_{day}')
+            
+            # Create entry for both open and closed days
+            BusinessHours.objects.create(
+                business=business,
+                day_of_week=day,
+                start_time=start if not is_closed else None,
+                end_time=end if not is_closed else None,
+                is_closed=is_closed
+            )
     
     # Get existing hours
     hours_dict = {}

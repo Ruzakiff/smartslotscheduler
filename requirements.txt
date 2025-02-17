@@ -3,3 +3,8 @@ psycopg2-binary>=2.9.9
 gunicorn>=21.2.0
 pytz>=2024.1
 whitenoise>=6.6.0
+
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+icalendar
