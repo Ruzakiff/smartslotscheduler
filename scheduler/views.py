@@ -8,6 +8,7 @@ from django.utils import timezone
 import pytz
 import json
 from getcalendar import CalendarService
+from .services import DjangoCalendarService
 
 
 # Create your views here.
@@ -30,53 +31,30 @@ def get_available_slots(request, business_id):
     business = get_object_or_404(Business, id=business_id)
     date_str = request.GET.get('date')
     service_id = request.GET.get('service')
+    address = request.GET.get('address')
+    unit = request.GET.get('unit')
     
     if not service_id:
         return JsonResponse({'error': 'Service ID is required'}, status=400)
     
     try:
-        service = Service.objects.get(id=service_id, business=business)
-        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        # Initialize calendar service with business
+        calendar_service = DjangoCalendarService(business)
         
-        # Get business hours for the day
-        day_of_week = date.weekday()
-        try:
-            hours = BusinessHours.objects.get(
-                business=business,
-                day_of_week=day_of_week,
-                is_closed=False
-            )
-            
-            # Generate time slots with timezone awareness
-            slots = []
-            tz = pytz.timezone(timezone.get_current_timezone_name())
-            current_time = tz.localize(datetime.combine(date, hours.start_time))
-            end_time = tz.localize(datetime.combine(date, hours.end_time))
-            
-            while current_time + timedelta(minutes=service.duration) <= end_time:
-                # Check if slot is available
-                slot_end = current_time + timedelta(minutes=service.duration)
-                is_available = not Booking.objects.filter(
-                    business=business,
-                    start_time__lt=slot_end,
-                    end_time__gt=current_time,
-                    status='confirmed'
-                ).exists()
-                
-                if is_available:
-                    slots.append(current_time.strftime('%H:%M'))
-                
-                current_time += timedelta(minutes=30)
-            
-            return JsonResponse({'slots': slots})
-            
-        except BusinessHours.DoesNotExist:
-            return JsonResponse({'slots': [], 'message': 'Business is closed on this day'})
-            
-    except Service.DoesNotExist:
-        return JsonResponse({'error': 'Service not found'}, status=404)
-    except ValueError as e:
-        return JsonResponse({'error': f'Invalid date format: {str(e)}'}, status=400)
+        # Construct full address if provided
+        full_address = f"{address}{f' Unit {unit}' if unit else ''}" if address else None
+        
+        # Get available slots
+        available_slots = calendar_service.get_available_slots(
+            date_str,
+            service_id,
+            destination_address=full_address
+        )
+        
+        return JsonResponse({'slots': available_slots})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 def create_booking(request):
     """Create a new booking"""

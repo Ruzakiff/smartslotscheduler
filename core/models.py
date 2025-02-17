@@ -9,6 +9,12 @@ class Business(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
+    calendar_id = models.CharField(
+        max_length=255, 
+        null=True, 
+        blank=True,
+        help_text="Google Calendar ID for this business"
+    )
     
     class Meta:
         verbose_name = 'business'        # Singular form
